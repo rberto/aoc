@@ -1,0 +1,4 @@
+prog = []
+
+with open("./input", "r") as f:
+    f.readline().split(", ")

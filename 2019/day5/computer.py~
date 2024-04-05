@@ -1,0 +1,126 @@
+from enum import Enum
+import sys
+prog = []
+
+opcodes = [1,2,3,4,99]
+
+def add(args):
+    return args[0]+args[1]
+
+def mult(args):
+    return a*b
+
+def read(args):
+    return input("Input:")
+
+def output(args):
+    print(args[0])
+
+def end(args):
+    quit()
+
+addition = {"id": 1, "nbargs": 3, "func": add}
+multiply = {"id": 2, "nbargs": 3, "func": mult}
+read = {"id": 3, "nbargs": 1, "func": read}
+output = {"id": 4, "nbargs": 1, "func": output}
+fin = {"id": 99, "nbargs": 0, "func": end}
+
+opcode = [i for i in range(0,100)]
+
+opcodes[1] = addition
+opcodes[2] = multiply
+opcodes[3] = read
+opcodes[4] = output
+opcodes.insert(99, fin)
+
+#print(opcodes)
+
+#opcodes[99] = fin
+
+class mode(Enum):
+    POSITION = 0
+    IMMEDIATE = 1
+
+def instructionparse(instr):
+    opcode = (instr%100)
+    param1mode = mode(int((instr / 100)%10))
+    param2mode = mode(int((instr / 1000)%10))
+    param3mode = mode(int((instr / 10000)%10))
+    return (opcode, [param1mode, param2mode, param3mode])
+    
+def exec(index):
+    op, modes = instructionparse(prog[index])
+    #print(op, modes)
+    
+    args = [i for i in range(1, opcodes[op]["nbargs"] + 1)]
+    values = [i for i in range(1, opcodes[op]["nbargs"] + 1)]
+    
+    for i in range(1, opcodes[op]["nbargs"] + 1):
+        args.insert(i, prog[index+i])
+        if (modes[i] == mode.POSITION):
+            values.insert(i, prog[args[i]])
+        else:
+            values.insert(i, args[i])
+
+    #print(args)
+    result = opcodes[op]["func"](args)
+    if result != None:
+        prog[args[-1]] = result
+
+    return opcodes[op]["nbargs"] + 1
+
+    """
+    if not op in opcodes:
+        return -2
+    if op == 99:
+        return -1
+
+    arg1 = prog[prog[index+1]]
+    arg2 = prog[prog[index+2]]
+    result_index = prog[index+3]
+    
+    if op == 1:
+        prog[result_index] = arg1 + arg2
+        return index + 4
+    elif op == 2:
+        prog[result_index] = arg1 * arg2
+        return index + 4
+    elif op == 3:
+        var = input("input:")
+        prog[result_index] = var
+        return index+2
+    elif op == 4:
+        print(arg1)
+        return index+2
+    """
+prog = [3,0,4,0,99]
+index = 0
+while index != -1:
+    index = exec(index)
+    print("current", index)
+    #print(prog)
+    if index == -2:
+        print("Error")
+        break
+
+
+"""
+with open("./input", "r") as f:
+    prog_org = [int(x) for x in f.readline().split(",")]
+
+for noun in range(0,99):
+    for verb in range(0,99):
+        prog = list(prog_org)
+        prog[1]=noun
+        prog[2]=verb
+        index = 0
+        while index != -1:
+            index = exec(index)
+            #print(prog)
+            if index == -2:
+#                print("Error")
+                break
+        if prog[0] == 19690720:
+            print(noun, verb)
+            print(100*noun + verb)
+"""
