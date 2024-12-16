@@ -1,6 +1,16 @@
 use std::fs;
 use std::string;
 
+fn count_occurence(elt:i32, list:Vec<i32>) -> i32 {
+    let mut result = 0;
+    for e in list {
+        if e == elt {
+            result += 1;
+        }
+    }
+    return result;
+}
+
 fn main() {
 
     let contents = fs::read_to_string("./input.txt")
@@ -20,16 +30,24 @@ fn main() {
         }
     }
 
-    list1.sort();
-    list2.sort();
 
-    let mut i = 0;
+    // list1.sort();
+    // list2.sort();
+
+    // let mut i = 0;
     let mut sum = 0;
 
-    while i < list1.len() {
-        sum += (list1[i] - list2[i]).abs();
-        i += 1;
+
+
+    for elt in list1 {
+        sum += elt * count_occurence(elt, list2.clone());    
     }
+
+
+    // while i < list1.len() {
+    //     sum += (list1[i] - list2[i]).abs();
+    //     i += 1;
+    // }
 
     println!("result is {sum}");
 
