@@ -1,38 +1,57 @@
 use std::fs;
 use std::string;
 
-fn islevelsafe(level : Vec<i32>) -> bool {
+fn findunsafelevel(level : Vec<i32>) -> Option<usize> {
 
-    let mut i = 0;
-    let mut j = level.len() - 1 ;
-    let mut dwok = true;
-    let mut uwok = true;
+    let ispositive = (level[1] - level [0]).is_positive();
+    let mut i: usize = 0;
     while i < (level.len() - 1)  {
         let upwalk = level[i+1] - level [i];
-        let downwalk = level[j-1] - level [j];
-        println!("upwalk = {upwalk}, downwalk = {downwalk}");
+        println!("upwalk = {upwalk}");
 
-        match upwalk {
+        if upwalk.is_positive() != ispositive {
+            println!("found {i}");
+            return Some(i);
+        }
+
+        match upwalk.abs() {
             1 => (),
             2 => (),
             3 => (),
-            _ => {uwok = false},
-        }
-        match downwalk {
-                1 => (),
-                2 => (),
-                3 => (),
-                _ => {dwok =  false;},
-        }
-
-        if (uwok == false) & (dwok == false) {
-            return false;
+            _ => {println!("found {i}"); return Some(i)},
         }
         
         i += 1;
-        j -= 1;    
     }
-    return true;
+    return None;
+}
+
+fn nbunsafelevels(level : Vec<i32>) -> Option<usize> {
+
+    let ispositive = (level[1] - level [0]).is_positive();
+    let mut nb: usize = 0;
+    let mut i: usize = 0;
+    while i < (level.len() - 1)  {
+        let upwalk = level[i+1] - level [i];
+        println!("upwalk = {upwalk}");
+
+        if upwalk.is_positive() != ispositive {
+            println!("found {i}");
+            nb += 1;
+            i += 1;
+            continue;
+        }
+
+        match upwalk.abs() {
+            1 => (),
+            2 => (),
+            3 => (),
+            _ => {println!("found {i}"); nb += 1;},
+        }
+        
+        i += 1;
+    }
+    return Some(nb);
 }
 
 fn nbofsafelevels(contents: &str) -> i32{
@@ -43,14 +62,38 @@ fn nbofsafelevels(contents: &str) -> i32{
 
     for level in levelstr {
         println!("level = {level}");
-        let mut list1: Vec<i32> = Vec::new();
         let c: Vec<&str> = level.split(' ').collect();
+
+        let mut report: Vec<i32> = Vec::new();
         for num in c {
-            list1.push(num.parse::<i32>().expect("bla1"));
+            report.push(num.parse::<i32>().expect("bla1"));
         }
-        if islevelsafe(list1) {
+
+        
+
+        let nb: usize = nbunsafelevels(report.clone()).unwrap();
+        println!("nb of unsafe: {nb}");
+
+        let levels: Option<usize> = findunsafelevel(report.clone());
+        if levels == None {
             println!("safe");
             sum += 1;
+        } else {
+            let mut copy: Vec<i32> = report.to_vec();
+            copy.remove(levels.unwrap());
+            println!("{:?}", copy);
+            if findunsafelevel(copy) == None {
+                sum += 1;
+            } else {
+                let mut copy2: Vec<i32> = report.to_vec();
+                copy2.remove(levels.unwrap() + 1);
+                println!("{:?}", copy2);
+                if findunsafelevel(copy2) == None {
+                    sum += 1;
+                } else {
+                    println!("unsafe");
+                }
+            }
         }
     }
 
@@ -79,6 +122,22 @@ mod tests {
         let contents = fs::read_to_string("./exemple.txt")
         .expect("Should have been able to read the file");
         let result = nbofsafelevels(&contents);
-        assert_eq!(result, 2);
+        assert_eq!(result, 4);
     }
+
+    #[test]
+    fn single_level() {
+        let contents = "20 22 22 23 25 29\n";
+        let result = nbofsafelevels(&contents);
+        assert_eq!(result, 0);
+    }
+
+    
+    #[test]
+    fn single_level1() {
+        let contents = "57 58 59 60 64\n";
+        let result = nbofsafelevels(&contents);
+        assert_eq!(result, 1);
+    }
+
 }
